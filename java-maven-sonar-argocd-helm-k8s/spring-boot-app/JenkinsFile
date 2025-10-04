@@ -11,7 +11,7 @@ pipeline {
     stage('Checkout') {
       steps {
         sh 'echo passed'
-        git branch: 'main', url: 'https://github.com/kavinkumar807/Jenkins-Zero-To-Hero.git'
+        // git branch: 'main', url: 'https://github.com/kavinkumar807/Jenkins-Zero-To-Hero.git'
       }
     }
     stage('Build and Test') {
@@ -58,7 +58,8 @@ pipeline {
                     git config --global --add safe.directory $PWD
                     git config user.email "kavinkumarbaskar@gmail.com"
                     git config user.name "Kavin Kumar B"
-
+                    git fetch origin main
+                    git checkout main
                     BUILD_NUMBER=${BUILD_NUMBER}
                     sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
                     git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
