@@ -5,21 +5,20 @@ pipeline {
       // args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // mount Docker socket to access the host's Docker daemon
       image 'skibidichat/ultimate-jenkins:latest'
       args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
-      // args '-u 1000:1000 -v /var/run/docker.sock:/var/run/docker.sock'
     }
   }
   stages {
     stage('Checkout') {
       steps {
-        cleanWs() // optional: clean workspace to prevent old .git issues
-         sh 'echo passed'
-        // git branch: 'main', url: 'https://github.com/kavinkumar807/Jenkins-Zero-To-Hero.git'
-        }
+        sh 'echo passed'
+        //git branch: 'main', url: 'https://github.com/kavinkumar807/Jenkins-Zero-To-Hero.git'
+      }
     }
     stage('Build and Test') {
-      dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
-            sh 'ls -ltr'
-            sh 'mvn clean package -B'
+      steps {
+        sh 'ls -ltr'
+        // build the project and create a JAR file
+        sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn clean package'
       }
     }
     stage('Static Code Analysis') {
@@ -59,8 +58,6 @@ pipeline {
                     git config --global --add safe.directory $PWD
                     git config user.email "kavinkumarbaskar@gmail.com"
                     git config user.name "Kavin Kumar B"
-                    git fetch origin main
-                    git checkout main
                     BUILD_NUMBER=${BUILD_NUMBER}
                     sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
                     git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
