@@ -4,22 +4,17 @@ pipeline {
       // image 'abhishekf5/maven-abhishek-docker-agent:v1'
       // args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // mount Docker socket to access the host's Docker daemon
       image 'skibidichat/ultimate-jenkins:latest'
-      // args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
-      args '-u 1000:1000 -v /var/run/docker.sock:/var/run/docker.sock'
+      args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
+      // args '-u 1000:1000 -v /var/run/docker.sock:/var/run/docker.sock'
     }
   }
   stages {
     stage('Checkout') {
       steps {
         cleanWs() // optional: clean workspace to prevent old .git issues
-        checkout([$class: 'GitSCM',
-          branches: [[name: '*/main']],
-          userRemoteConfigs: [[
-              url: "https://github.com/kavinkumar807/Jenkins-Zero-To-Hero.git",
-              credentialsId: 'github' // Jenkins GitHub token
-          ]]
-        ])
-      }
+         sh 'echo passed'
+        // git branch: 'main', url: 'https://github.com/kavinkumar807/Jenkins-Zero-To-Hero.git'
+        }
     }
     stage('Build and Test') {
       dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
