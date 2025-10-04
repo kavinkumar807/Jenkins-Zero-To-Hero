@@ -63,8 +63,7 @@ pipeline {
                   git checkout -B main
                   
                   BUILD_NUMBER=${BUILD_NUMBER}
-                  // sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
-                  sh "sed -i 's|image: kavinkumarbaskar/ultimate-cicd:.*|image: kavinkumarbaskar/ultimate-cicd:${BUILD_NUMBER}|' java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml"
+                  sed -i "s|image: kavinkumarbaskar/ultimate-cicd:.*|image: kavinkumarbaskar/ultimate-cicd:${BUILD_NUMBER}|" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
 
                   
                   # Check if file was modified before committing
