@@ -10,8 +10,14 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        sh 'echo passed'
-        // git branch: 'main', url: 'https://github.com/kavinkumar807/Jenkins-Zero-To-Hero.git'
+        cleanWs() // optional: clean workspace to prevent old .git issues
+        checkout([$class: 'GitSCM',
+          branches: [[name: '*/main']],
+          userRemoteConfigs: [[
+              url: "https://github.com/kavinkumar807/Jenkins-Zero-To-Hero.git",
+              credentialsId: 'github' // Jenkins GitHub token
+          ]]
+        ])
       }
     }
     stage('Build and Test') {
