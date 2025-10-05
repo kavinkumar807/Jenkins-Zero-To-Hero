@@ -28,6 +28,7 @@ pipeline {
         script {
           echo "Front-end: building PR #${env.CHANGE_ID} on branch ${env.CHANGE_BRANCH}"
         }
+        
         sh 'npm ci'
         sh 'npm test'
       }
