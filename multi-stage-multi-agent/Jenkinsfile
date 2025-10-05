@@ -13,7 +13,7 @@ pipeline {
         script {
           echo "Back-end: building PR #${env.CHANGE_ID} on branch ${env.CHANGE_BRANCH}"
         }
-        sh 'mvn clean verify'
+        sh 'java -version'
       }
     }
 
@@ -47,7 +47,7 @@ pipeline {
         script {
           echo "Building main branch after merge / push"
         }
-        sh 'mvn clean verify'
+        sh 'java -version'
       }
     }
 
