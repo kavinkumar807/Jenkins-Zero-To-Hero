@@ -7,11 +7,11 @@ pipeline {
         docker { image 'maven:3.8.1-adoptopenjdk-11' }
       }
       when {
-        changeRequest()
+        changeRequest()        // run only for PR builds
       }
       steps {
         script {
-          echo "Back-end build triggered by Pull Request #${env.CHANGE_ID}"
+          echo "Back-end: building PR #${env.CHANGE_ID} on branch ${env.CHANGE_BRANCH}"
         }
         sh 'mvn clean verify'
       }
@@ -22,18 +22,36 @@ pipeline {
         docker { image 'node:16-alpine' }
       }
       when {
-        changeRequest()
+        changeRequest()        // run only for PR builds
       }
       steps {
         script {
-          echo "Front-end build triggered by Pull Request #${env.CHANGE_ID}"
+          echo "Front-end: building PR #${env.CHANGE_ID} on branch ${env.CHANGE_BRANCH}"
         }
         sh 'npm ci'
         sh 'npm test'
       }
     }
 
-    stage('Deploy') {
+    stage('Build on main (post-merge)') {
+      agent {
+        docker { image 'maven:3.8.1-adoptopenjdk-11' }
+      }
+      when {
+        allOf {
+          branch 'main'
+          not { changeRequest() }
+        }
+      }
+      steps {
+        script {
+          echo "Building main branch after merge / push"
+        }
+        sh 'mvn clean verify'
+      }
+    }
+
+    stage('Deploy to Prod (or target)') {
       agent {
         docker { image 'alpine:latest' }
       }
@@ -44,15 +62,24 @@ pipeline {
         }
       }
       steps {
-        echo "Deploying code after merge / push on main"
-        // your deploy commands here
+        script {
+          echo "Deploying from main branch"
+        }
+        // your deploy commands, e.g.:
+        // sh './deploy.sh'
       }
     }
   }
 
   post {
     always {
-      echo "Pipeline done. Branch: ${env.BRANCH_NAME}, PR: ${env.CHANGE_ID}"
+      script {
+        if (env.CHANGE_ID) {
+          echo "Finished PR build for #${env.CHANGE_ID}"
+        } else {
+          echo "Finished build on branch ${env.BRANCH_NAME}"
+        }
+      }
     }
   }
 }
