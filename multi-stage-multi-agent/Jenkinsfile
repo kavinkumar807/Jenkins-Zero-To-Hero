@@ -2,33 +2,34 @@ pipeline {
   agent none
 
   stages {
-    stage('Back-end Build & Test') {
+    stage('Back-end Build & Test (PR)') {
       agent {
         docker { image 'maven:3.8.1-adoptopenjdk-11' }
       }
       when {
-        changeRequest()        // run only for PR builds
+        changeRequest()   // run only in PR builds
+        // Optionally you can also check target branch:
+        // expression { env.CHANGE_TARGET == 'main' }
       }
       steps {
         script {
-          echo "Back-end: building PR #${env.CHANGE_ID} on branch ${env.CHANGE_BRANCH}"
+          echo "Back-end: building PR #${env.CHANGE_ID} from ${env.CHANGE_BRANCH} → target ${env.CHANGE_TARGET}"
         }
         sh 'java -version'
       }
     }
 
-    stage('Front-end Build & Test') {
+    stage('Front-end Build & Test (PR)') {
       agent {
         docker { image 'node:16-alpine' }
       }
       when {
-        changeRequest()        // run only for PR builds
+        changeRequest()
       }
       steps {
         script {
-          echo "Front-end: building PR #${env.CHANGE_ID} on branch ${env.CHANGE_BRANCH}"
+          echo "Front-end: building PR #${env.CHANGE_ID} from ${env.CHANGE_BRANCH}"
         }
-        
         sh 'npm ci'
         sh 'npm test'
       }
@@ -52,7 +53,7 @@ pipeline {
       }
     }
 
-    stage('Deploy to Prod (or target)') {
+    stage('Deploy from main') {
       agent {
         docker { image 'alpine:latest' }
       }
@@ -66,8 +67,7 @@ pipeline {
         script {
           echo "Deploying from main branch"
         }
-        // your deploy commands, e.g.:
-        // sh './deploy.sh'
+        // deploy commands here
       }
     }
   }
@@ -76,9 +76,9 @@ pipeline {
     always {
       script {
         if (env.CHANGE_ID) {
-          echo "Finished PR build for #${env.CHANGE_ID}"
+          echo "Finished PR build #${env.CHANGE_ID}"
         } else {
-          echo "Finished build on branch ${env.BRANCH_NAME}"
+          echo "Finished main build on ${env.BRANCH_NAME}"
         }
       }
     }
