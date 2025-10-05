@@ -2,36 +2,57 @@ pipeline {
   agent none
 
   stages {
-    stage('Back-end') {
+    stage('Back-end Build & Test') {
       agent {
         docker { image 'maven:3.8.1-adoptopenjdk-11' }
       }
+      when {
+        changeRequest()
+      }
       steps {
         script {
-          if (env.CHANGE_ID) {
-            echo "Build triggered by Pull Request #${env.CHANGE_ID}"
-          } else {
-            echo "Build triggered by push/merge on branch ${env.BRANCH_NAME}"
-          }
+          echo "Back-end build triggered by Pull Request #${env.CHANGE_ID}"
         }
-        sh 'mvn --version'
+        sh 'mvn clean verify'
       }
     }
 
-    stage('Front-end') {
+    stage('Front-end Build & Test') {
       agent {
         docker { image 'node:16-alpine' }
       }
+      when {
+        changeRequest()
+      }
       steps {
         script {
-          if (env.CHANGE_ID) {
-            echo "Front-end build: Pull Request #${env.CHANGE_ID}"
-          } else {
-            echo "Front-end build: push/merge on branch ${env.BRANCH_NAME}"
-          }
+          echo "Front-end build triggered by Pull Request #${env.CHANGE_ID}"
         }
-        sh 'node --version'
+        sh 'npm ci'
+        sh 'npm test'
       }
+    }
+
+    stage('Deploy') {
+      agent {
+        docker { image 'alpine:latest' }
+      }
+      when {
+        allOf {
+          branch 'main'
+          not { changeRequest() }
+        }
+      }
+      steps {
+        echo "Deploying code after merge / push on main"
+        // your deploy commands here
+      }
+    }
+  }
+
+  post {
+    always {
+      echo "Pipeline done. Branch: ${env.BRANCH_NAME}, PR: ${env.CHANGE_ID}"
     }
   }
 }
